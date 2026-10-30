@@ -100,6 +100,32 @@ npm run dev            # http://localhost:5173
 A API precisa estar rodando (`npm run dev` na raiz).
 
 
+## 4.3 Rotas de módulos e conteúdos
+
+| Rota | O que faz |
+|---|---|
+| `GET /modules` | Lista os módulos (`?course_id=1` filtra por curso, ordenado por `position`) |
+| `GET /modules/:id` | Busca um módulo |
+| `POST /modules` | Cria um módulo (`course_id`, `user_id` e `title` obrigatórios) |
+| `PUT /modules/:id` | Atualiza um módulo (só os campos enviados) |
+| `DELETE /modules/:id` | Remove o módulo e os conteúdos dele |
+| `GET /contents` | Lista os conteúdos (`?module_id=1` filtra por módulo, ordenado por `position`) |
+| `GET /contents/:id` | Busca um conteúdo |
+| `POST /contents` | Cria um conteúdo (`module_id`, `title` e `content` obrigatórios) |
+| `PUT /contents/:id` | Atualiza um conteúdo (só os campos enviados) |
+| `DELETE /contents/:id` | Remove um conteúdo |
+
+Se `position` não for enviado no `POST`, o registro vai para o final do curso/módulo. `content_type` aceita `video` (padrão), `article` ou `quiz`.
+
+Exemplo:
+
+```bash
+curl -X POST http://localhost:3000/modules   -H "Content-Type: application/json"   -d '{ "course_id": 1, "user_id": 1, "title": "Testing", "description": "Unit and integration tests." }'
+```
+
+Respostas de erro seguem o mesmo formato das outras rotas: `{ "message": "..." }`, com `400` (dados inválidos ou curso/módulo inexistente), `404` (registro não encontrado) e `409` (já existe um registro nessa `position`).
+
+
 ## 5. Subir o projeto
 
 ### Desenvolvimento (hot reload)
