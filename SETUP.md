@@ -123,7 +123,7 @@ Exemplo:
 curl -X POST http://localhost:3000/modules   -H "Content-Type: application/json"   -d '{ "course_id": 1, "user_id": 1, "title": "Testing", "description": "Unit and integration tests." }'
 ```
 
-Respostas de erro seguem o mesmo formato das outras rotas: `{ "message": "..." }`, com `400` (dados inválidos ou curso/módulo inexistente), `404` (registro não encontrado) e `409` (já existe um registro nessa `position`).
+Respostas de erro seguem o mesmo formato das outras rotas: `{ "message": "..." }`, com `400` (dados inválidos ou curso/módulo inexistente) e `404` (registro não encontrado).
 
 
 ## 5. Subir o projeto

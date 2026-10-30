@@ -1,6 +1,4 @@
-export const CONTENT_TYPES = ["video", "article", "quiz"] as const;
-
-export type ContentType = (typeof CONTENT_TYPES)[number];
+export type ContentType = "video" | "article" | "quiz";
 
 export interface Content {
     id: number;

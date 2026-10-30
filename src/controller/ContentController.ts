@@ -1,79 +1,26 @@
 import type { Request, Response } from "express";
 import ContentRepository from "../repository/ContentRepository.js";
 import ModuleRepository from "../repository/ModuleRepository.js";
-import { CONTENT_TYPES } from "../models/Content.js";
-import type { ContentInput, ContentType } from "../models/Content.js";
+import type { ContentInput } from "../models/Content.js";
+
+const contentTypes = ["video", "article", "quiz"];
 
 function parseId(value: unknown) {
     const id = Number(value);
 
-    return Number.isInteger(id) && id > 0 ? id : null;
+    if (!Number.isInteger(id) || id <= 0) {
+        return null;
+    }
+
+    return id;
 }
 
-// Validates the request body. On update every field is optional,
-// on create module_id, title and content are required.
-function readBody(body: Record<string, unknown>, isUpdate: boolean) {
-    const data: Partial<ContentInput> = {};
-
-    if (!isUpdate || body.module_id !== undefined) {
-        const moduleId = parseId(body.module_id);
-        if (!moduleId) return { error: "Invalid module ID." };
-        data.module_id = moduleId;
-    }
-
-    if (!isUpdate || body.title !== undefined) {
-        if (typeof body.title !== "string" || body.title.trim() === "") {
-            return { error: "Title is required." };
-        }
-        if (body.title.trim().length > 150) {
-            return { error: "Title must have at most 150 characters." };
-        }
-        data.title = body.title.trim();
-    }
-
-    if (!isUpdate || body.content !== undefined) {
-        if (typeof body.content !== "string" || body.content.trim() === "") {
-            return { error: "Content is required." };
-        }
-        data.content = body.content.trim();
-    }
-
-    if (body.content_type !== undefined) {
-        if (!CONTENT_TYPES.includes(body.content_type as ContentType)) {
-            return { error: `Content type must be one of: ${CONTENT_TYPES.join(", ")}.` };
-        }
-        data.content_type = body.content_type as ContentType;
-    }
-
-    if (body.position !== undefined) {
-        const position = parseId(body.position);
-        if (!position) return { error: "Position must be a positive integer." };
-        data.position = position;
-    }
-
-    return { data };
+function isValidTitle(title: unknown) {
+    return typeof title === "string" && title.trim() !== "" && title.trim().length <= 150;
 }
 
-function handleDatabaseError(error: unknown, res: Response) {
-    const code = (error as { code?: string }).code;
-
-    // unique (module_id, position)
-    if (code === "23505") {
-        res.status(409).json({
-            message: "There is already a content in this position for this module.",
-        });
-        return true;
-    }
-
-    // foreign key (module removed in the meantime)
-    if (code === "23503") {
-        res.status(400).json({
-            message: "Module not found.",
-        });
-        return true;
-    }
-
-    return false;
+function isValidText(text: unknown) {
+    return typeof text === "string" && text.trim() !== "";
 }
 
 async function getContents(req: Request, res: Response) {
@@ -136,33 +83,75 @@ async function getContentById(req: Request<{ id: string }>, res: Response) {
 }
 
 async function createContent(req: Request, res: Response) {
-    const result = readBody(req.body ?? {}, false);
+    const { title, content, content_type, position } = req.body ?? {};
+    const moduleId = parseId(req.body?.module_id);
 
-    if ("error" in result) {
+    if (!moduleId) {
         res.status(400).json({
-            message: result.error,
+            message: "Invalid module ID.",
         });
         return;
     }
 
-    const data = result.data as ContentInput;
+    if (!isValidTitle(title)) {
+        res.status(400).json({
+            message: "Title is required and must have at most 150 characters.",
+        });
+        return;
+    }
+
+    if (!isValidText(content)) {
+        res.status(400).json({
+            message: "Content is required.",
+        });
+        return;
+    }
+
+    if (content_type !== undefined && !contentTypes.includes(content_type)) {
+        res.status(400).json({
+            message: "Content type must be video, article or quiz.",
+        });
+        return;
+    }
+
+    if (position !== undefined && !parseId(position)) {
+        res.status(400).json({
+            message: "Position must be a positive integer.",
+        });
+        return;
+    }
 
     try {
-        if (!(await ModuleRepository.findById(data.module_id))) {
+        const module = await ModuleRepository.findById(moduleId);
+
+        if (!module) {
             res.status(400).json({
                 message: "Module not found.",
             });
             return;
         }
 
-        data.position ??= await ContentRepository.findNextPosition(data.module_id);
+        const newContent: ContentInput = {
+            module_id: moduleId,
+            title: title.trim(),
+            content: content.trim(),
+        };
 
-        const content = await ContentRepository.create(data);
+        if (content_type !== undefined) {
+            newContent.content_type = content_type;
+        }
 
-        res.status(201).json(content);
+        // Without a position the content goes to the end of the module
+        if (position !== undefined) {
+            newContent.position = Number(position);
+        } else {
+            newContent.position = await ContentRepository.findNextPosition(moduleId);
+        }
+
+        const createdContent = await ContentRepository.create(newContent);
+
+        res.status(201).json(createdContent);
     } catch (error) {
-        if (handleDatabaseError(error, res)) return;
-
         console.error("Error creating content: ", error);
 
         res.status(500).json({
@@ -173,6 +162,7 @@ async function createContent(req: Request, res: Response) {
 
 async function updateContent(req: Request<{ id: string }>, res: Response) {
     const id = parseId(req.params.id);
+    const { module_id, title, content, content_type, position } = req.body ?? {};
 
     if (!id) {
         res.status(400).json({
@@ -181,18 +171,67 @@ async function updateContent(req: Request<{ id: string }>, res: Response) {
         return;
     }
 
-    const result = readBody(req.body ?? {}, true);
+    // Only the fields sent in the body are updated
+    const changes: Partial<ContentInput> = {};
 
-    if ("error" in result) {
-        res.status(400).json({
-            message: result.error,
-        });
-        return;
+    if (module_id !== undefined) {
+        const moduleId = parseId(module_id);
+
+        if (!moduleId) {
+            res.status(400).json({
+                message: "Invalid module ID.",
+            });
+            return;
+        }
+
+        changes.module_id = moduleId;
     }
 
-    const data = result.data;
+    if (title !== undefined) {
+        if (!isValidTitle(title)) {
+            res.status(400).json({
+                message: "Title is required and must have at most 150 characters.",
+            });
+            return;
+        }
 
-    if (Object.keys(data).length === 0) {
+        changes.title = title.trim();
+    }
+
+    if (content !== undefined) {
+        if (!isValidText(content)) {
+            res.status(400).json({
+                message: "Content is required.",
+            });
+            return;
+        }
+
+        changes.content = content.trim();
+    }
+
+    if (content_type !== undefined) {
+        if (!contentTypes.includes(content_type)) {
+            res.status(400).json({
+                message: "Content type must be video, article or quiz.",
+            });
+            return;
+        }
+
+        changes.content_type = content_type;
+    }
+
+    if (position !== undefined) {
+        if (!parseId(position)) {
+            res.status(400).json({
+                message: "Position must be a positive integer.",
+            });
+            return;
+        }
+
+        changes.position = Number(position);
+    }
+
+    if (Object.keys(changes).length === 0) {
         res.status(400).json({
             message: "No fields to update.",
         });
@@ -200,28 +239,30 @@ async function updateContent(req: Request<{ id: string }>, res: Response) {
     }
 
     try {
-        const content = await ContentRepository.findById(id);
+        const existingContent = await ContentRepository.findById(id);
 
-        if (!content) {
+        if (!existingContent) {
             res.status(404).json({
                 message: "Content not found.",
             });
             return;
         }
 
-        if (data.module_id !== undefined && !(await ModuleRepository.findById(data.module_id))) {
-            res.status(400).json({
-                message: "Module not found.",
-            });
-            return;
+        if (changes.module_id) {
+            const module = await ModuleRepository.findById(changes.module_id);
+
+            if (!module) {
+                res.status(400).json({
+                    message: "Module not found.",
+                });
+                return;
+            }
         }
 
-        const updated = await ContentRepository.update(id, data);
+        const updatedContent = await ContentRepository.update(id, changes);
 
-        res.status(200).json(updated);
+        res.status(200).json(updatedContent);
     } catch (error) {
-        if (handleDatabaseError(error, res)) return;
-
         console.error("Error updating content: ", error);
 
         res.status(500).json({
