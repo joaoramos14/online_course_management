@@ -117,7 +117,7 @@ Resposta esperada:
 ├── src/
 │   ├── config/        # configurações (cliente do Supabase)
 │   ├── controller/    # recebem a requisição e devolvem a resposta
-│   ├── models/        # tipos/interfaces das entidades
+│   ├── models/        # classes das entidades (User, Course, Module, Content)
 │   ├── repository/    # acesso ao banco (consultas ao Supabase)
 │   ├── routes/        # definição das rotas do Express
 │   ├── app.ts         # cria o app Express e registra as rotas
