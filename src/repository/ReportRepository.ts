@@ -1,29 +1,84 @@
-import { readFile } from "node:fs/promises";
-import path from "node:path";
-import pg from "pg";
+import supabase from "../config/supabase.js";
 
-// Supabase JS can't run raw SQL, so reports use pg and the .sql files in /database.
-const pool = new pg.Pool({
-    connectionString: process.env.DATABASE_URL,
-    ssl: { rejectUnauthorized: false },
-});
+// Each report is a database view created by the migration
+// "create-report-views" (same SQL as the files database/0X_*.sql).
 
-async function runSqlFile(file: string) {
-    const sql = await readFile(path.join(process.cwd(), "database", file), "utf-8");
-    const { rows } = await pool.query(sql);
-    return rows;
+// SQL 01
+async function findUsersWithMostCourses() {
+    const { data, error } = await supabase
+        .from("report_users_most_courses")
+        .select("*")
+        .order("total_courses", { ascending: false })
+        .order("name", { ascending: true });
+
+    if (error) {
+        throw error;
+    }
+
+    return data;
 }
 
-const usersWithMostCourses = () => runSqlFile("01_users_with_most_courses.sql");
-const courseWithMostContents = () => runSqlFile("02_course_with_most_contents.sql");
-const coursesWithTotals = () => runSqlFile("03_courses_with_total_modules_and_contents.sql");
-const contentsWithCourseName = () => runSqlFile("04_contents_with_course_name.sql");
-const usersWhoWatchedContent2 = () => runSqlFile("05_users_who_watched_content_2.sql");
+// SQL 02
+async function findCourseWithMostContents() {
+    const { data, error } = await supabase
+        .from("report_course_most_contents")
+        .select("*")
+        .order("id", { ascending: true });
+
+    if (error) {
+        throw error;
+    }
+
+    return data;
+}
+
+// SQL 03
+async function findCoursesWithTotals() {
+    const { data, error } = await supabase
+        .from("report_courses_totals")
+        .select("*")
+        .order("id", { ascending: true });
+
+    if (error) {
+        throw error;
+    }
+
+    return data;
+}
+
+// SQL 04
+async function findContentsWithCourseName() {
+    const { data, error } = await supabase
+        .from("report_contents_with_course")
+        .select("*");
+
+    if (error) {
+        throw error;
+    }
+
+    return data;
+}
+
+// SQL 05
+async function findContentViewers(contentId: number) {
+    const { data, error } = await supabase
+        .from("report_content_viewers")
+        .select("*")
+        .eq("content_id", contentId)
+        .order("viewed_at", { ascending: true })
+        .order("name", { ascending: true });
+
+    if (error) {
+        throw error;
+    }
+
+    return data;
+}
 
 export default {
-    usersWithMostCourses,
-    courseWithMostContents,
-    coursesWithTotals,
-    contentsWithCourseName,
-    usersWhoWatchedContent2,
+    findUsersWithMostCourses,
+    findCourseWithMostContents,
+    findCoursesWithTotals,
+    findContentsWithCourseName,
+    findContentViewers,
 };

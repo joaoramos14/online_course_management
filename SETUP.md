@@ -73,6 +73,33 @@ npm run db:rollback   # desfaz a última migration
 
 Os SQLs dos relatórios ficam em `database/01_...sql` até `database/05_...sql` e podem ser executados no **SQL Editor** do Supabase.
 
+A API não roda SQL puro (o `supabase-js` não permite). Por isso, a migration `create-report-views` cria uma **view** para cada relatório, com o mesmo SQL dos arquivos, e a API lê essas views:
+
+| Rota | Relatório |
+|---|---|
+| `GET /reports/users-most-courses` | SQL 01 - usuários com mais cursos |
+| `GET /reports/course-most-contents` | SQL 02 - curso com mais conteúdos |
+| `GET /reports/courses-totals` | SQL 03 - cursos com total de módulos e conteúdos |
+| `GET /reports/contents-with-course` | SQL 04 - conteúdos com o nome do curso |
+| `GET /reports/content-2-viewers` | SQL 05 - usuários que assistiram o conteúdo ID=2 |
+| `GET /reports/content-viewers/:contentId` | SQL 05 para qualquer conteúdo |
+
+> Se mudar um SQL de relatório, atualize também a view (com uma migration nova).
+
+## 4.2 Front-end (React)
+
+O front fica na pasta `frontend/` e consome a API. Veja `frontend/README.md`. Resumo:
+
+```bash
+cd frontend
+npm install
+cp .env.example .env   # VITE_API_URL=http://localhost:3000
+npm run dev            # http://localhost:5173
+```
+
+A API precisa estar rodando (`npm run dev` na raiz).
+
+
 ## 5. Subir o projeto
 
 ### Desenvolvimento (hot reload)

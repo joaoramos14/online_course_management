@@ -1,12 +1,13 @@
 import { Router } from "express";
-import * as controller from "../controller/reportController.js";
+import ReportController from "../controller/ReportController.js";
 
 const router = Router();
 
-router.get("/users-most-courses", controller.getUsersWithMostCourses);       // SQL 01
-router.get("/course-most-contents", controller.getCourseWithMostContents);    // SQL 02
-router.get("/courses-totals", controller.getCoursesWithTotals);               // SQL 03
-router.get("/contents-with-course", controller.getContentsWithCourseName);    // SQL 04
-router.get("/content-2-viewers", controller.getUsersWhoWatchedContent2);      // SQL 05
+router.get("/users-most-courses", ReportController.getUsersWithMostCourses);       // SQL 01
+router.get("/course-most-contents", ReportController.getCourseWithMostContents);    // SQL 02
+router.get("/courses-totals", ReportController.getCoursesWithTotals);               // SQL 03
+router.get("/contents-with-course", ReportController.getContentsWithCourseName);    // SQL 04
+router.get("/content-2-viewers", ReportController.getUsersWhoWatchedContent2);      // SQL 05
+router.get("/content-viewers/:contentId", ReportController.getContentViewers);     // SQL 05 for any content
 
 export default router;
