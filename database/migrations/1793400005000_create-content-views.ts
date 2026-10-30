@@ -1,5 +1,8 @@
 import type { MigrationBuilder } from "node-pg-migrate";
 
+// Records which user watched which content (lesson).
+// One row per user + content (a user cannot watch the same content twice).
+
 export async function up(pgm: MigrationBuilder): Promise<void> {
     pgm.createTable("content_views", {
         id: "id",

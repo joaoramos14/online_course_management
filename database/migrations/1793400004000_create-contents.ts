@@ -10,9 +10,16 @@ export async function up(pgm: MigrationBuilder): Promise<void> {
             onDelete: "CASCADE",
         },
         title: { type: "varchar(150)", notNull: true },
+        // The lesson itself: video URL, article text or quiz description
+        content: { type: "text", notNull: true },
         content_type: { type: "varchar(20)", notNull: true, default: "video" },
         position: { type: "integer", notNull: true },
         created_at: {
+            type: "timestamptz",
+            notNull: true,
+            default: pgm.func("now()"),
+        },
+        updated_at: {
             type: "timestamptz",
             notNull: true,
             default: pgm.func("now()"),
@@ -29,6 +36,11 @@ export async function up(pgm: MigrationBuilder): Promise<void> {
         unique: ["module_id", "position"],
     });
     pgm.createIndex("contents", "module_id");
+    pgm.sql(`
+        CREATE TRIGGER contents_set_updated_at
+        BEFORE UPDATE ON contents
+        FOR EACH ROW EXECUTE FUNCTION set_updated_at();
+    `);
     pgm.sql("ALTER TABLE contents ENABLE ROW LEVEL SECURITY;");
 }
 

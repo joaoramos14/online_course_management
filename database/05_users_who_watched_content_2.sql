@@ -1,3 +1,4 @@
+-- SQL 05: Which users have already watched the lesson with content ID = 2?
 SELECT
     u.id AS user_id,
     u.name,

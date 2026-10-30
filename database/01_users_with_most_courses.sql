@@ -1,3 +1,4 @@
+-- SQL 01: Which users have the most courses?
 SELECT
     u.id,
     u.name,

@@ -9,11 +9,13 @@ interface ContentSeed {
 
 interface ModuleSeed {
     title: string;
+    description: string;
     contents: ContentSeed[];
 }
 
 interface CourseSeed {
     userId: number;
+    code: string;
     title: string;
     description: string;
     modules: ModuleSeed[];
@@ -23,51 +25,74 @@ const video = (title: string): ContentSeed => ({ title, type: "video" });
 const article = (title: string): ContentSeed => ({ title, type: "article" });
 const quiz = (title: string): ContentSeed => ({ title, type: "quiz" });
 
+// Builds the "content" column value according to the content type.
+function buildContent(courseCode: string, content: ContentSeed): string {
+    const slug = content.title
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g, "-")
+        .replace(/(^-|-$)/g, "");
+
+    switch (content.type) {
+        case "video":
+            return `https://videos.example.com/${courseCode.toLowerCase()}/${slug}`;
+        case "article":
+            return `Reading material about "${content.title}".`;
+        case "quiz":
+            return `Multiple choice questions to review "${content.title}".`;
+    }
+}
+
 const courses: CourseSeed[] = [
     // Course 1: 5 modules x 3 contents = 15 contents
     {
         userId: 1,
-        title: "Node.js e TypeScript do Zero",
-        description: "Aprenda a construir APIs modernas com Node.js e TypeScript.",
+        code: "NODE-101",
+        title: "Node.js and TypeScript from Scratch",
+        description: "Learn how to build modern APIs with Node.js and TypeScript.",
         modules: [
             {
-                title: "Introdução ao Node.js",
+                title: "Introduction to Node.js",
+                description: "What Node.js is and how to set up the environment.",
                 contents: [
-                    video("O que é Node.js"),
-                    video("Instalando o ambiente"),
-                    article("Módulos e NPM"),
+                    video("What is Node.js"),
+                    video("Setting up the environment"),
+                    article("Modules and NPM"),
                 ],
             },
             {
-                title: "Fundamentos de TypeScript",
+                title: "TypeScript Fundamentals",
+                description: "Types, interfaces and classes.",
                 contents: [
-                    video("Tipos básicos"),
-                    video("Interfaces e classes"),
-                    quiz("Quiz: fundamentos de TypeScript"),
+                    video("Basic types"),
+                    video("Interfaces and classes"),
+                    quiz("Quiz: TypeScript fundamentals"),
                 ],
             },
             {
-                title: "Criando uma API com Express",
+                title: "Building an API with Express",
+                description: "Routes, middlewares and layered architecture.",
                 contents: [
-                    video("Primeira rota"),
+                    video("First route"),
                     video("Middlewares"),
-                    article("Organização em camadas"),
+                    article("Layered architecture"),
                 ],
             },
             {
-                title: "Integração com banco de dados",
+                title: "Database Integration",
+                description: "Connecting the API to a PostgreSQL database.",
                 contents: [
-                    video("Conectando ao Postgres"),
-                    video("Consultas com Supabase"),
-                    article("Migrations e seeders"),
+                    video("Connecting to Postgres"),
+                    video("Queries with Supabase"),
+                    article("Migrations and seeders"),
                 ],
             },
             {
-                title: "Publicação",
+                title: "Deployment",
+                description: "Preparing the application for production.",
                 contents: [
-                    video("Variáveis de ambiente"),
-                    article("Build para produção"),
-                    quiz("Quiz final"),
+                    video("Environment variables"),
+                    article("Production build"),
+                    quiz("Final quiz"),
                 ],
             },
         ],
@@ -75,37 +100,41 @@ const courses: CourseSeed[] = [
     // Course 2: 3 modules x 5 contents = 15 contents
     {
         userId: 1,
-        title: "Banco de Dados Relacional com PostgreSQL",
-        description: "Modelagem, SQL e boas práticas com PostgreSQL.",
+        code: "SQL-201",
+        title: "Relational Databases with PostgreSQL",
+        description: "Data modeling, SQL and best practices with PostgreSQL.",
         modules: [
             {
-                title: "Modelagem de dados",
+                title: "Data Modeling",
+                description: "Entities, relationships and normalization.",
                 contents: [
-                    video("Entidades e atributos"),
-                    video("Relacionamentos"),
-                    video("Chaves primárias e estrangeiras"),
-                    article("Normalização"),
-                    quiz("Quiz: modelagem"),
+                    video("Entities and attributes"),
+                    video("Relationships"),
+                    video("Primary and foreign keys"),
+                    article("Normalization"),
+                    quiz("Quiz: data modeling"),
                 ],
             },
             {
-                title: "SQL essencial",
+                title: "Essential SQL",
+                description: "Queries, joins and aggregations.",
                 contents: [
-                    video("SELECT e filtros"),
+                    video("SELECT and filters"),
                     video("JOINs"),
-                    video("GROUP BY e agregações"),
-                    article("Subconsultas e CTEs"),
+                    video("GROUP BY and aggregations"),
+                    article("Subqueries and CTEs"),
                     quiz("Quiz: SQL"),
                 ],
             },
             {
                 title: "Performance",
+                description: "Indexes, query plans and transactions.",
                 contents: [
-                    video("Índices"),
+                    video("Indexes"),
                     video("EXPLAIN ANALYZE"),
-                    article("Transações"),
-                    article("Boas práticas de migrations"),
-                    quiz("Quiz final"),
+                    article("Transactions"),
+                    article("Migration best practices"),
+                    quiz("Final quiz"),
                 ],
             },
         ],
@@ -113,24 +142,27 @@ const courses: CourseSeed[] = [
     // Course 3: 2 modules x 4 contents = 8 contents
     {
         userId: 2,
-        title: "Git e GitHub para Equipes",
-        description: "Fluxo de trabalho colaborativo com Git.",
+        code: "GIT-101",
+        title: "Git and GitHub for Teams",
+        description: "Collaborative workflow with Git and GitHub.",
         modules: [
             {
-                title: "Git na prática",
+                title: "Git in Practice",
+                description: "Commits, branches and history.",
                 contents: [
-                    video("Commits e branches"),
-                    video("Merge e rebase"),
+                    video("Commits and branches"),
+                    video("Merge and rebase"),
                     article("Conventional Commits"),
                     quiz("Quiz: Git"),
                 ],
             },
             {
-                title: "Colaboração no GitHub",
+                title: "Collaborating on GitHub",
+                description: "Pull requests, code review and conflicts.",
                 contents: [
                     video("Pull requests"),
                     video("Code review"),
-                    article("Resolvendo conflitos"),
+                    article("Resolving conflicts"),
                     quiz("Quiz: GitHub"),
                 ],
             },
@@ -139,14 +171,16 @@ const courses: CourseSeed[] = [
     // Course 4: 1 module x 3 contents = 3 contents
     {
         userId: 3,
-        title: "Introdução a APIs REST",
-        description: "Conceitos básicos de APIs REST e HTTP.",
+        code: "API-101",
+        title: "Introduction to REST APIs",
+        description: "Basic concepts of REST APIs and HTTP.",
         modules: [
             {
-                title: "Conceitos de REST",
+                title: "REST Concepts",
+                description: "Resources, HTTP methods and status codes.",
                 contents: [
-                    video("O que é uma API"),
-                    article("Verbos e códigos HTTP"),
+                    video("What is an API"),
+                    article("HTTP methods and status codes"),
                     quiz("Quiz: REST"),
                 ],
             },
@@ -155,21 +189,24 @@ const courses: CourseSeed[] = [
     // Course 5: 2 modules x 2 contents = 4 contents
     {
         userId: 4,
-        title: "Lógica de Programação",
-        description: "Primeiros passos para quem está começando a programar.",
+        code: "LOGIC-101",
+        title: "Programming Logic",
+        description: "First steps for those who are starting to program.",
         modules: [
             {
-                title: "Algoritmos",
+                title: "Algorithms",
+                description: "What an algorithm is and how to represent it.",
                 contents: [
-                    video("O que é um algoritmo"),
-                    article("Fluxogramas"),
+                    video("What is an algorithm"),
+                    article("Flowcharts"),
                 ],
             },
             {
-                title: "Estruturas de controle",
+                title: "Control Structures",
+                description: "Conditionals and loops.",
                 contents: [
-                    video("Condicionais"),
-                    video("Laços de repetição"),
+                    video("Conditionals"),
+                    video("Loops"),
                 ],
             },
         ],
@@ -182,23 +219,24 @@ export async function seedCourses(client: Client): Promise<void> {
 
     for (const course of courses) {
         const courseResult = await client.query<{ id: number }>(
-            "INSERT INTO courses (user_id, title, description) VALUES ($1, $2, $3) RETURNING id",
-            [course.userId, course.title, course.description],
+            "INSERT INTO courses (user_id, code, title, description) VALUES ($1, $2, $3, $4) RETURNING id",
+            [course.userId, course.code, course.title, course.description],
         );
         const courseId = courseResult.rows[0]!.id;
 
         for (const [moduleIndex, module] of course.modules.entries()) {
+            // The module is created by the same user who created the course
             const moduleResult = await client.query<{ id: number }>(
-                "INSERT INTO modules (course_id, title, position) VALUES ($1, $2, $3) RETURNING id",
-                [courseId, module.title, moduleIndex + 1],
+                "INSERT INTO modules (course_id, user_id, title, description, position) VALUES ($1, $2, $3, $4, $5) RETURNING id",
+                [courseId, course.userId, module.title, module.description, moduleIndex + 1],
             );
             const moduleId = moduleResult.rows[0]!.id;
             totalModules++;
 
             for (const [contentIndex, content] of module.contents.entries()) {
                 await client.query(
-                    "INSERT INTO contents (module_id, title, content_type, position) VALUES ($1, $2, $3, $4)",
-                    [moduleId, content.title, content.type, contentIndex + 1],
+                    "INSERT INTO contents (module_id, title, content, content_type, position) VALUES ($1, $2, $3, $4, $5)",
+                    [moduleId, content.title, buildContent(course.code, content), content.type, contentIndex + 1],
                 );
                 totalContents++;
             }

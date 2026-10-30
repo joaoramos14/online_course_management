@@ -1,0 +1,74 @@
+// Entity-Relationship Diagram (DER) - online_course_management
+// Render with: dot -Tpng docs/der.dot -o docs/der.png
+digraph DER {
+    graph [rankdir=LR, splines=true, nodesep=0.6, ranksep=1.1, pad=0.4, bgcolor="white", fontname="Helvetica"];
+    node  [shape=plaintext, fontname="Helvetica", fontsize=12];
+    edge  [fontname="Helvetica", fontsize=10, color="#444444", arrowsize=0.9];
+
+    users [label=<
+    <table border="1" cellborder="0" cellspacing="0" cellpadding="6" color="#333333">
+      <tr><td colspan="3" bgcolor="#dbeafb"><b>users</b></td></tr>
+      <tr><td align="left"><b>id</b></td><td align="left"><font color="#555555">serial</font></td><td align="right" port="id"><b>PK</b></td></tr>
+      <tr><td align="left">name</td><td align="left"><font color="#555555">varchar(100)</font></td><td></td></tr>
+      <tr><td align="left">email</td><td align="left"><font color="#555555">varchar(255)</font></td><td align="right"><b>UK</b></td></tr>
+      <tr><td align="left">status</td><td align="left"><font color="#555555">varchar(20)</font></td><td></td></tr>
+      <tr><td align="left">created_at</td><td align="left"><font color="#555555">timestamptz</font></td><td></td></tr>
+      <tr><td align="left">updated_at</td><td align="left"><font color="#555555">timestamptz</font></td><td></td></tr>
+    </table>>];
+
+    courses [label=<
+    <table border="1" cellborder="0" cellspacing="0" cellpadding="6" color="#333333">
+      <tr><td colspan="3" bgcolor="#dff3e4"><b>courses</b></td></tr>
+      <tr><td align="left"><b>id</b></td><td align="left"><font color="#555555">serial</font></td><td align="right" port="id"><b>PK</b></td></tr>
+      <tr><td align="left" port="user_id">user_id</td><td align="left"><font color="#555555">integer</font></td><td align="right"><b>FK</b></td></tr>
+      <tr><td align="left">code</td><td align="left"><font color="#555555">varchar(30)</font></td><td align="right"><b>UK</b></td></tr>
+      <tr><td align="left">title</td><td align="left"><font color="#555555">varchar(150)</font></td><td></td></tr>
+      <tr><td align="left">description</td><td align="left"><font color="#555555">text</font></td><td></td></tr>
+      <tr><td align="left">created_at</td><td align="left"><font color="#555555">timestamptz</font></td><td></td></tr>
+      <tr><td align="left">updated_at</td><td align="left"><font color="#555555">timestamptz</font></td><td></td></tr>
+    </table>>];
+
+    modules [label=<
+    <table border="1" cellborder="0" cellspacing="0" cellpadding="6" color="#333333">
+      <tr><td colspan="3" bgcolor="#fdf0cc"><b>modules</b></td></tr>
+      <tr><td align="left"><b>id</b></td><td align="left"><font color="#555555">serial</font></td><td align="right" port="id"><b>PK</b></td></tr>
+      <tr><td align="left" port="course_id">course_id</td><td align="left"><font color="#555555">integer</font></td><td align="right"><b>FK</b></td></tr>
+      <tr><td align="left" port="user_id">user_id</td><td align="left"><font color="#555555">integer</font></td><td align="right"><b>FK</b></td></tr>
+      <tr><td align="left">title</td><td align="left"><font color="#555555">varchar(150)</font></td><td></td></tr>
+      <tr><td align="left">description</td><td align="left"><font color="#555555">text</font></td><td></td></tr>
+      <tr><td align="left">position</td><td align="left"><font color="#555555">integer</font></td><td></td></tr>
+      <tr><td align="left">created_at</td><td align="left"><font color="#555555">timestamptz</font></td><td></td></tr>
+      <tr><td align="left">updated_at</td><td align="left"><font color="#555555">timestamptz</font></td><td></td></tr>
+    </table>>];
+
+    contents [label=<
+    <table border="1" cellborder="0" cellspacing="0" cellpadding="6" color="#333333">
+      <tr><td colspan="3" bgcolor="#fbe3d8"><b>contents</b></td></tr>
+      <tr><td align="left"><b>id</b></td><td align="left"><font color="#555555">serial</font></td><td align="right" port="id"><b>PK</b></td></tr>
+      <tr><td align="left" port="module_id">module_id</td><td align="left"><font color="#555555">integer</font></td><td align="right"><b>FK</b></td></tr>
+      <tr><td align="left">title</td><td align="left"><font color="#555555">varchar(150)</font></td><td></td></tr>
+      <tr><td align="left">content</td><td align="left"><font color="#555555">text</font></td><td></td></tr>
+      <tr><td align="left">content_type</td><td align="left"><font color="#555555">varchar(20)</font></td><td></td></tr>
+      <tr><td align="left">position</td><td align="left"><font color="#555555">integer</font></td><td></td></tr>
+      <tr><td align="left">created_at</td><td align="left"><font color="#555555">timestamptz</font></td><td></td></tr>
+      <tr><td align="left">updated_at</td><td align="left"><font color="#555555">timestamptz</font></td><td></td></tr>
+    </table>>];
+
+    content_views [label=<
+    <table border="1" cellborder="0" cellspacing="0" cellpadding="6" color="#333333">
+      <tr><td colspan="3" bgcolor="#e8def8"><b>content_views</b></td></tr>
+      <tr><td align="left"><b>id</b></td><td align="left"><font color="#555555">serial</font></td><td align="right"><b>PK</b></td></tr>
+      <tr><td align="left" port="user_id">user_id</td><td align="left"><font color="#555555">integer</font></td><td align="right"><b>FK</b></td></tr>
+      <tr><td align="left" port="content_id">content_id</td><td align="left"><font color="#555555">integer</font></td><td align="right"><b>FK</b></td></tr>
+      <tr><td align="left">viewed_at</td><td align="left"><font color="#555555">timestamptz</font></td><td></td></tr>
+    </table>>];
+
+    // 1:N relationships (crow's foot notation: one ||  ---  o< many)
+    edge [dir=both, arrowtail=teetee, arrowhead=crowodot];
+    users:id:e    -> courses:user_id:w       [label="owns"];
+    users:id:e    -> modules:user_id:w       [label="creates"];
+    courses:id:e  -> modules:course_id:w     [label="has"];
+    modules:id:e  -> contents:module_id:w    [label="has"];
+    users:id:e    -> content_views:user_id:w [label="watches"];
+    contents:id:e -> content_views:content_id:w [label="is watched in"];
+}
