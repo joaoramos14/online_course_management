@@ -21,12 +21,19 @@
   "scripts": {
     "dev": "node --watch --env-file=.env --import=tsx/esm src/server.ts",
     "build": "tsc",
-    "start": "node dist/server.js"
+    "start": "node dist/server.js",
+    "db:migrate": "node --env-file=.env node_modules/node-pg-migrate/bin/node-pg-migrate.js up -m database/migrations",
+    "db:rollback": "node --env-file=.env node_modules/node-pg-migrate/bin/node-pg-migrate.js down -m database/migrations",
+    "db:seed": "node --env-file=.env --import=tsx/esm database/seeders/run.ts",
+    "db:check": "tsc -p database/tsconfig.json"
   },
   "devDependencies": {
     "@types/cors": "^2.8.19",
     "@types/express": "^5.0.6",
     "@types/node": "^26.6.6",
+    "@types/pg": "^8.23.1",
+    "node-pg-migrate": "^9.0.0",
+    "pg": "^8.23.1",
     "tsx": "^4.23.15",
     "typescript": "^7.0.2"
   },

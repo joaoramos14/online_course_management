@@ -44,6 +44,7 @@ Preencha o `.env`:
 | `SUPABASE_URL` | URL do projeto Supabase (`https://<id>.supabase.co`) |
 | `SUPABASE_SECRET_KEY` | Chave secreta (`sb_secret_...`) |
 | `PORT` | Porta da API (padrão `3000`) |
+| `DATABASE_URL` | Conexão direta com o Postgres, usada **só** pelas migrations e seeders. Pegue em Supabase → **Connect** → *Session pooler* e troque `[YOUR-PASSWORD]` pela senha do banco (peça ao João) |
 
 > ⚠️ **Peça as credenciais no grupo da equipe, em mensagem privada.**
 > O `.env` está no `.gitignore` e **nunca** deve ser commitado. A chave secreta ignora as regras de segurança do banco (RLS); se vazar, qualquer pessoa pode ler e apagar tudo.
@@ -55,6 +56,22 @@ npm ci
 ```
 
 > Use `npm ci`, não `npm install`, para todo mundo ter as mesmas versões do `package-lock.json`. Só use `npm install <pacote>` quando for **adicionar** uma dependência, e commite o `package-lock.json` junto.
+
+## 4.1 Banco de dados (migrations e seeders)
+
+As tabelas são criadas por **migrations** (`database/migrations/`, biblioteca [node-pg-migrate](https://salsita.github.io/node-pg-migrate/)) e os dados de exemplo por **seeders** (`database/seeders/`). O diagrama do banco está em `docs/der.png`.
+
+> O banco do Supabase é **compartilhado** pelo grupo. As migrations só precisam ser rodadas **uma vez** (por quem estiver configurando o banco). Os outros não precisam rodar nada.
+
+```bash
+npm run db:migrate    # cria as tabelas (só roda as migrations que ainda não foram aplicadas)
+npm run db:seed       # APAGA os dados e insere os dados de exemplo
+npm run db:rollback   # desfaz a última migration
+```
+
+> ⚠️ `db:seed` apaga todos os registros das tabelas antes de inserir. Não rode depois que o grupo já tiver cadastrado dados de teste importantes.
+
+Os SQLs dos relatórios ficam em `database/01_...sql` até `database/05_...sql` e podem ser executados no **SQL Editor** do Supabase.
 
 ## 5. Subir o projeto
 
@@ -108,12 +125,20 @@ Resposta esperada:
 | `npm run dev` | Sobe a API com hot reload, lendo o `.env` |
 | `npm run build` | Compila `src/` para `dist/` |
 | `npm start` | Roda o código compilado em `dist/` |
+| `npm run db:migrate` | Cria/atualiza as tabelas no banco |
+| `npm run db:rollback` | Desfaz a última migration |
+| `npm run db:seed` | Apaga os dados e insere os dados de exemplo |
+| `npm run db:check` | Confere os tipos dos arquivos de `database/` |
 
 ## 8. Estrutura de pastas
 
 ```
 .
-├── database/          # scripts SQL do banco (em construção)
+├── database/
+│   ├── migrations/    # criação das tabelas (node-pg-migrate)
+│   ├── seeders/       # dados de exemplo
+│   └── 0X_*.sql       # SQLs dos relatórios
+├── docs/              # DER (der.png e der.dot)
 ├── src/
 │   ├── config/        # configurações (cliente do Supabase)
 │   ├── controller/    # recebem a requisição e devolvem a resposta
