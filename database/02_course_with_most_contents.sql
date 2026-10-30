@@ -4,7 +4,7 @@ WITH course_contents AS (
         c.id,
         c.code,
         c.title,
-        COUNT(ct.id) AS total_contents
+        COUNT(ct.id)::int AS total_contents
     FROM courses c
     LEFT JOIN modules m ON m.course_id = c.id
     LEFT JOIN contents ct ON ct.module_id = m.id
