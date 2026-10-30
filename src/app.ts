@@ -1,5 +1,6 @@
 import express from "express";
 import cors from "cors";
+import reportRoutes from "./routes/reportRoutes.js";
 
 const app = express();
 app.use(cors());
@@ -42,6 +43,6 @@ app.get("/", (req, res) => {
 // =================
 // Reports
 // =================
-// app.use("/reports", reportRoutes);
+app.use("/reports", reportRoutes);
 
 export default app;
