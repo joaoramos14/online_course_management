@@ -4,6 +4,7 @@ import swaggerUi from "swagger-ui-express";
 import { swaggerSpec } from "./docs/swagger.js";
 import userRoutes from "./routes/userRoutes.js";
 import courseRoutes from "./routes/courseRoutes.js";
+import reportRoutes from "./routes/reportRoutes.js";
 
 const app = express();
 app.use(cors());
@@ -48,6 +49,6 @@ app.use("/courses", courseRoutes);
 // =================
 // Reports
 // =================
-// app.use("/reports", reportRoutes);
+app.use("/reports", reportRoutes);
 
 export default app;

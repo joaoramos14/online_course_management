@@ -1,4 +1,3 @@
-// OpenAPI spec for users and courses (modules/contents are added by Leandro).
 const idParam = (name: string) => ({
     name, in: "path", required: true, schema: { type: "integer" },
 });
