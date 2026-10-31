@@ -100,6 +100,31 @@ npm run dev            # http://localhost:5173
 A API precisa estar rodando (`npm run dev` na raiz).
 
 
+## 4.3 Rotas de módulos e conteúdos
+
+| Rota | O que faz |
+|---|---|
+| `GET /modules` | Lista os módulos (`?course_id=1` filtra por curso, ordenado por `position`) |
+| `GET /modules/:id` | Busca um módulo |
+| `POST /modules` | Cria um módulo (`course_id`, `user_id` e `title` obrigatórios) |
+| `PUT /modules/:id` | Atualiza um módulo (só os campos enviados) |
+| `DELETE /modules/:id` | Remove o módulo e os conteúdos dele |
+| `GET /contents` | Lista os conteúdos (`?module_id=1` filtra por módulo, ordenado por `position`) |
+| `GET /contents/:id` | Busca um conteúdo |
+| `POST /contents` | Cria um conteúdo (`module_id`, `title` e `content` obrigatórios) |
+| `PUT /contents/:id` | Atualiza um conteúdo (só os campos enviados) |
+| `DELETE /contents/:id` | Remove um conteúdo |
+| `GET /contents/:id/views` | Lista quem assistiu o conteúdo |
+| `POST /contents/:id/views` | Marca o conteúdo como assistido (`{ "user_id": 1 }`) |
+| `DELETE /contents/:id/views/:userId` | Desmarca o conteúdo como assistido |
+
+Se `position` não for enviado no `POST`, o registro vai para o final do curso/módulo. `content_type` aceita `video` (padrão), `article` ou `quiz`.
+
+Respostas de erro seguem o mesmo formato das outras rotas: `{ "message": "..." }`, com `400` (dados inválidos ou curso/módulo inexistente), `404` (registro não encontrado) e `409` (usuário já assistiu o conteúdo).
+
+**Postman:** a coleção fica em `docs/postman/modules-contents.postman_collection.json`. Importe no Postman, suba a API e rode a coleção inteira (Run collection). Ela cria um módulo e um conteúdo de teste, testa todas as rotas e apaga tudo no final.
+
+
 ## 5. Subir o projeto
 
 ### Desenvolvimento (hot reload)

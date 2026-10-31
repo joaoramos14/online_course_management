@@ -4,6 +4,8 @@ import swaggerUi from "swagger-ui-express";
 import { swaggerSpec } from "./docs/swagger.js";
 import userRoutes from "./routes/userRoutes.js";
 import courseRoutes from "./routes/courseRoutes.js";
+import moduleRoutes from "./routes/moduleRoutes.js";
+import contentRoutes from "./routes/contentRoutes.js";
 import reportRoutes from "./routes/reportRoutes.js";
 
 const app = express();
@@ -37,13 +39,13 @@ app.use("/courses", courseRoutes);
 // =================
 // Modules
 // =================
-// app.use("/modules", moduleRoutes);
+app.use("/modules", moduleRoutes);
 
 
 // =================
 // Contents
 // =================
-// app.use("/contents", contentRoutes);
+app.use("/contents", contentRoutes);
 
 
 // =================
