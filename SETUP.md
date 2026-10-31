@@ -122,7 +122,16 @@ Se `position` não for enviado no `POST`, o registro vai para o final do curso/m
 
 Respostas de erro seguem o mesmo formato das outras rotas: `{ "message": "..." }`, com `400` (dados inválidos ou curso/módulo inexistente), `404` (registro não encontrado) e `409` (usuário já assistiu o conteúdo).
 
-**Postman:** a coleção fica em `docs/postman/modules-contents.postman_collection.json`. Importe no Postman, suba a API e rode a coleção inteira (Run collection). Ela cria um módulo e um conteúdo de teste, testa todas as rotas e apaga tudo no final.
+**Postman:** as coleções ficam em `docs/postman/`:
+
+| Arquivo | O que testa |
+|---|---|
+| `users-courses-reports.postman_collection.json` | Users, courses e os 6 relatórios |
+| `modules-contents.postman_collection.json` | Modules, contents e aulas assistidas |
+
+Importe as duas no Postman, suba a API e rode cada coleção inteira (Run collection). Cada uma cria os próprios registros de teste, testa todas as rotas e apaga tudo no final. A URL base fica na variável `baseUrl` (`http://localhost:3000`).
+
+**Swagger:** com a API rodando, a documentação interativa de todas as rotas fica em http://localhost:3000/docs.
 
 
 ## 5. Subir o projeto
