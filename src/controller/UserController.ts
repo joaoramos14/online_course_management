@@ -1,6 +1,22 @@
 import type { Request, Response } from "express";
 import userRepository from "../repository/userRepository.js";
 
+// Returns true when the route param is a positive integer id.
+function isValidId(id: string | undefined): id is string {
+    return id !== undefined && /^[1-9]\d*$/.test(id);
+}
+
+// PGRST116 = no row found (".single()" returned nothing)
+function isNotFound(error: unknown) {
+    return (error as { code?: string }).code === "PGRST116";
+}
+
+const USER_STATUSES = ["active", "inactive"];
+
+function isValidStatus(status: unknown) {
+    return status === undefined || (typeof status === "string" && USER_STATUSES.includes(status));
+}
+
 async function getAll(req: Request, res: Response) {
     try {
         const users = await userRepository.findAll();
@@ -18,9 +34,9 @@ async function getAll(req: Request, res: Response) {
 async function getById(req: Request<{ id: string }>, res: Response) {
     const { id } = req.params;
 
-    if (!id) {
+    if (!isValidId(id)) {
         res.status(400).json({
-            message: "User ID not provided."
+            message: "Invalid user ID."
         });
         return;
     }
@@ -55,6 +71,13 @@ async function create(req: Request, res: Response) {
         return;
     }
 
+    if (!isValidStatus(status)) {
+        res.status(400).json({
+            message: "Status must be active or inactive."
+        });
+        return;
+    }
+
     try {
         const user = await userRepository.create({
             name,
@@ -84,9 +107,9 @@ async function update(req: Request<{ id: string }>, res: Response) {
     const { id } = req.params;
     const { name, email, status } = req.body;
 
-    if (!id) {
+    if (!isValidId(id)) {
         res.status(400).json({
-            message: "User ID not provided."
+            message: "Invalid user ID."
         });
         return;
     }
@@ -105,6 +128,13 @@ async function update(req: Request<{ id: string }>, res: Response) {
         return;
     }
 
+    if (!isValidStatus(status)) {
+        res.status(400).json({
+            message: "Status must be active or inactive."
+        });
+        return;
+    }
+
     try {
         const user = await userRepository.update(id, {
             name,
@@ -115,6 +145,13 @@ async function update(req: Request<{ id: string }>, res: Response) {
         res.status(200).json(user);
     } catch (error) {
         console.error("Error updating user: ", error);
+
+        if (isNotFound(error)) {
+            res.status(404).json({
+                message: "User not found.",
+            });
+            return;
+        }
 
         if ((error as { code?: string }).code === "23505") {
             res.status(409).json({
@@ -132,9 +169,9 @@ async function update(req: Request<{ id: string }>, res: Response) {
 async function remove(req: Request<{ id: string }>, res: Response) {
     const { id } = req.params;
 
-    if (!id) {
+    if (!isValidId(id)) {
         res.status(400).json({
-            message: "User ID not provided."
+            message: "Invalid user ID."
         });
         return;
     }
@@ -147,6 +184,13 @@ async function remove(req: Request<{ id: string }>, res: Response) {
         });
     } catch (error) {
         console.error("Error removing user: ", error);
+
+        if (isNotFound(error)) {
+            res.status(404).json({
+                message: "User not found.",
+            });
+            return;
+        }
 
         // 23503 = user still has courses or modules linked to it
         if ((error as { code?: string }).code === "23503") {
