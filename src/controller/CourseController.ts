@@ -1,6 +1,16 @@
 import type { Request, Response } from "express";
 import courseRepository from "../repository/courseRepository.js";
 
+// Returns true when the route param is a positive integer id.
+function isValidId(id: string | undefined): id is string {
+    return id !== undefined && /^[1-9]\d*$/.test(id);
+}
+
+// PGRST116 = no row found (".single()" returned nothing)
+function isNotFound(error: unknown) {
+    return (error as { code?: string }).code === "PGRST116";
+}
+
 async function getAll(req: Request, res: Response) {
     try {
         const courses = await courseRepository.findAll();
@@ -41,9 +51,9 @@ async function getByKeyword(req: Request<{ keyword: string }>, res: Response) {
 async function getById(req: Request<{ courseId: string }>, res: Response) {
     const { courseId } = req.params;
 
-    if (!courseId) {
+    if (!isValidId(courseId)) {
         res.status(400).json({
-            message: "Course ID not provided."
+            message: "Invalid course ID."
         });
         return;
     }
@@ -123,9 +133,9 @@ async function update(req: Request<{ courseId: string }>, res: Response) {
     const { courseId } = req.params;
     const { code, title, description, user_id } = req.body;
 
-    if (!courseId) {
+    if (!isValidId(courseId)) {
         res.status(400).json({
-            message: "Course ID not provided."
+            message: "Invalid course ID."
         });
         return;
     }
@@ -163,6 +173,21 @@ async function update(req: Request<{ courseId: string }>, res: Response) {
     } catch (error) {
         console.error("Error updating course: ", error);
 
+        if (isNotFound(error)) {
+            res.status(404).json({
+                message: "Course not found.",
+            });
+            return;
+        }
+
+        // 23503 = user_id does not exist
+        if ((error as { code?: string }).code === "23503") {
+            res.status(400).json({
+                message: "User not found for the given user_id.",
+            });
+            return;
+        }
+
         if ((error as { code?: string }).code === "23505") {
             res.status(409).json({
                 message: "A course with this code already exists.",
@@ -179,9 +204,9 @@ async function update(req: Request<{ courseId: string }>, res: Response) {
 async function remove(req: Request<{ courseId: string }>, res: Response) {
     const { courseId } = req.params;
 
-    if (!courseId) {
+    if (!isValidId(courseId)) {
         res.status(400).json({
-            message: "Course ID not provided."
+            message: "Invalid course ID."
         });
         return;
     }
@@ -194,6 +219,13 @@ async function remove(req: Request<{ courseId: string }>, res: Response) {
         });
     } catch (error) {
         console.error("Error removing course: ", error);
+
+        if (isNotFound(error)) {
+            res.status(404).json({
+                message: "Course not found.",
+            });
+            return;
+        }
 
         // 23503 = course still has modules
         if ((error as { code?: string }).code === "23503") {
