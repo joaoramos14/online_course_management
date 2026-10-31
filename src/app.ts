@@ -1,9 +1,15 @@
 import express from "express";
 import cors from "cors";
+import swaggerUi from "swagger-ui-express";
+import { swaggerSpec } from "./docs/swagger.js";
+import userRoutes from "./routes/userRoutes.js";
+import courseRoutes from "./routes/courseRoutes.js";
 
 const app = express();
 app.use(cors());
 app.use(express.json());
+app.use("/docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
+
 
 // =================
 // Root
@@ -19,13 +25,13 @@ app.get("/", (req, res) => {
 // Users
 // =================
 // app.use("/users", userRoutes);
-
+app.use("/users", userRoutes);
 
 // =================
 // Courses
 // =================
 // app.use("/courses", courseRoutes);
-
+app.use("/courses", courseRoutes);
 
 // =================
 // Modules
