@@ -1,0 +1,1195 @@
+{
+    "info": {
+        "name": "Online Course Management - Users, Courses and Reports",
+        "description": "Run the folders in order. The requests create a user and a course, test them, check the reports and delete everything at the end.",
+        "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+    },
+    "item": [
+        {
+            "name": "Users",
+            "item": [
+                {
+                    "name": "Create user",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{baseUrl}}/users",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "users"
+                            ]
+                        },
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"name\": \"Postman User\",\n    \"email\": \"postman.user@example.com\"\n}",
+                            "options": {
+                                "raw": {
+                                    "language": "json"
+                                }
+                            }
+                        }
+                    },
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "type": "text/javascript",
+                                "exec": [
+                                    "pm.test(\"Status 201\", function () {",
+                                    "    pm.response.to.have.status(201);",
+                                    "});",
+                                    "const user = pm.response.json();",
+                                    "pm.collectionVariables.set(\"userId\", user.id);",
+                                    "pm.test(\"User created as active\", function () {",
+                                    "    pm.expect(user.email).to.eql(\"postman.user@example.com\");",
+                                    "    pm.expect(user.status).to.eql(\"active\");",
+                                    "});"
+                                ]
+                            }
+                        }
+                    ]
+                },
+                {
+                    "name": "Create user - duplicated email",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{baseUrl}}/users",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "users"
+                            ]
+                        },
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"name\": \"Other\",\n    \"email\": \"postman.user@example.com\"\n}",
+                            "options": {
+                                "raw": {
+                                    "language": "json"
+                                }
+                            }
+                        }
+                    },
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "type": "text/javascript",
+                                "exec": [
+                                    "pm.test(\"Status 409\", function () {",
+                                    "    pm.response.to.have.status(409);",
+                                    "});",
+                                    "pm.test(\"Returns a message\", function () {",
+                                    "    pm.expect(pm.response.json()).to.have.property(\"message\");",
+                                    "});"
+                                ]
+                            }
+                        }
+                    ]
+                },
+                {
+                    "name": "Create user - missing email",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{baseUrl}}/users",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "users"
+                            ]
+                        },
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"name\": \"No email\"\n}",
+                            "options": {
+                                "raw": {
+                                    "language": "json"
+                                }
+                            }
+                        }
+                    },
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "type": "text/javascript",
+                                "exec": [
+                                    "pm.test(\"Status 400\", function () {",
+                                    "    pm.response.to.have.status(400);",
+                                    "});",
+                                    "pm.test(\"Returns a message\", function () {",
+                                    "    pm.expect(pm.response.json()).to.have.property(\"message\");",
+                                    "});"
+                                ]
+                            }
+                        }
+                    ]
+                },
+                {
+                    "name": "Create user - invalid status",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{baseUrl}}/users",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "users"
+                            ]
+                        },
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"name\": \"X\",\n    \"email\": \"postman.invalid@example.com\",\n    \"status\": \"banana\"\n}",
+                            "options": {
+                                "raw": {
+                                    "language": "json"
+                                }
+                            }
+                        }
+                    },
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "type": "text/javascript",
+                                "exec": [
+                                    "pm.test(\"Status 400\", function () {",
+                                    "    pm.response.to.have.status(400);",
+                                    "});",
+                                    "pm.test(\"Returns a message\", function () {",
+                                    "    pm.expect(pm.response.json()).to.have.property(\"message\");",
+                                    "});"
+                                ]
+                            }
+                        }
+                    ]
+                },
+                {
+                    "name": "List users",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/users",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "users"
+                            ]
+                        }
+                    },
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "type": "text/javascript",
+                                "exec": [
+                                    "pm.test(\"Status 200\", function () {",
+                                    "    pm.response.to.have.status(200);",
+                                    "});",
+                                    "pm.test(\"Returns an array\", function () {",
+                                    "    pm.expect(pm.response.json()).to.be.an(\"array\");",
+                                    "});"
+                                ]
+                            }
+                        }
+                    ]
+                },
+                {
+                    "name": "Get user by id",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/users/{{userId}}",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "users",
+                                "{{userId}}"
+                            ]
+                        }
+                    },
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "type": "text/javascript",
+                                "exec": [
+                                    "pm.test(\"Status 200\", function () {",
+                                    "    pm.response.to.have.status(200);",
+                                    "});",
+                                    "pm.test(\"Same id\", function () {",
+                                    "    pm.expect(pm.response.json().id).to.eql(Number(pm.collectionVariables.get(\"userId\")));",
+                                    "});"
+                                ]
+                            }
+                        }
+                    ]
+                },
+                {
+                    "name": "Get user - not found",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/users/999999",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "users",
+                                "999999"
+                            ]
+                        }
+                    },
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "type": "text/javascript",
+                                "exec": [
+                                    "pm.test(\"Status 404\", function () {",
+                                    "    pm.response.to.have.status(404);",
+                                    "});",
+                                    "pm.test(\"Returns a message\", function () {",
+                                    "    pm.expect(pm.response.json()).to.have.property(\"message\");",
+                                    "});"
+                                ]
+                            }
+                        }
+                    ]
+                },
+                {
+                    "name": "Get user - invalid id",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/users/abc",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "users",
+                                "abc"
+                            ]
+                        }
+                    },
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "type": "text/javascript",
+                                "exec": [
+                                    "pm.test(\"Status 400\", function () {",
+                                    "    pm.response.to.have.status(400);",
+                                    "});",
+                                    "pm.test(\"Returns a message\", function () {",
+                                    "    pm.expect(pm.response.json()).to.have.property(\"message\");",
+                                    "});"
+                                ]
+                            }
+                        }
+                    ]
+                },
+                {
+                    "name": "Update user",
+                    "request": {
+                        "method": "PUT",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{baseUrl}}/users/{{userId}}",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "users",
+                                "{{userId}}"
+                            ]
+                        },
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"name\": \"Postman User Edited\",\n    \"email\": \"postman.user@example.com\",\n    \"status\": \"inactive\"\n}",
+                            "options": {
+                                "raw": {
+                                    "language": "json"
+                                }
+                            }
+                        }
+                    },
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "type": "text/javascript",
+                                "exec": [
+                                    "pm.test(\"Status 200\", function () {",
+                                    "    pm.response.to.have.status(200);",
+                                    "});",
+                                    "pm.test(\"User updated\", function () {",
+                                    "    pm.expect(pm.response.json().status).to.eql(\"inactive\");",
+                                    "});"
+                                ]
+                            }
+                        }
+                    ]
+                },
+                {
+                    "name": "Update user - not found",
+                    "request": {
+                        "method": "PUT",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{baseUrl}}/users/999999",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "users",
+                                "999999"
+                            ]
+                        },
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"name\": \"X\",\n    \"email\": \"nobody@example.com\"\n}",
+                            "options": {
+                                "raw": {
+                                    "language": "json"
+                                }
+                            }
+                        }
+                    },
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "type": "text/javascript",
+                                "exec": [
+                                    "pm.test(\"Status 404\", function () {",
+                                    "    pm.response.to.have.status(404);",
+                                    "});",
+                                    "pm.test(\"Returns a message\", function () {",
+                                    "    pm.expect(pm.response.json()).to.have.property(\"message\");",
+                                    "});"
+                                ]
+                            }
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "name": "Courses",
+            "item": [
+                {
+                    "name": "Create course",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{baseUrl}}/courses",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "courses"
+                            ]
+                        },
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"user_id\": {{userId}},\n    \"code\": \"POSTMAN-101\",\n    \"title\": \"Postman Course\",\n    \"description\": \"Created by the Postman collection\"\n}",
+                            "options": {
+                                "raw": {
+                                    "language": "json"
+                                }
+                            }
+                        }
+                    },
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "type": "text/javascript",
+                                "exec": [
+                                    "pm.test(\"Status 201\", function () {",
+                                    "    pm.response.to.have.status(201);",
+                                    "});",
+                                    "const course = pm.response.json();",
+                                    "pm.collectionVariables.set(\"courseId\", course.id);",
+                                    "pm.test(\"Course created\", function () {",
+                                    "    pm.expect(course.code).to.eql(\"POSTMAN-101\");",
+                                    "});"
+                                ]
+                            }
+                        }
+                    ]
+                },
+                {
+                    "name": "Create course - duplicated code",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{baseUrl}}/courses",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "courses"
+                            ]
+                        },
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"user_id\": {{userId}},\n    \"code\": \"POSTMAN-101\",\n    \"title\": \"Duplicated\"\n}",
+                            "options": {
+                                "raw": {
+                                    "language": "json"
+                                }
+                            }
+                        }
+                    },
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "type": "text/javascript",
+                                "exec": [
+                                    "pm.test(\"Status 409\", function () {",
+                                    "    pm.response.to.have.status(409);",
+                                    "});",
+                                    "pm.test(\"Returns a message\", function () {",
+                                    "    pm.expect(pm.response.json()).to.have.property(\"message\");",
+                                    "});"
+                                ]
+                            }
+                        }
+                    ]
+                },
+                {
+                    "name": "Create course - user not found",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{baseUrl}}/courses",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "courses"
+                            ]
+                        },
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"user_id\": 999999,\n    \"code\": \"POSTMAN-999\",\n    \"title\": \"No user\"\n}",
+                            "options": {
+                                "raw": {
+                                    "language": "json"
+                                }
+                            }
+                        }
+                    },
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "type": "text/javascript",
+                                "exec": [
+                                    "pm.test(\"Status 400\", function () {",
+                                    "    pm.response.to.have.status(400);",
+                                    "});",
+                                    "pm.test(\"Returns a message\", function () {",
+                                    "    pm.expect(pm.response.json()).to.have.property(\"message\");",
+                                    "});"
+                                ]
+                            }
+                        }
+                    ]
+                },
+                {
+                    "name": "List courses",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/courses",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "courses"
+                            ]
+                        }
+                    },
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "type": "text/javascript",
+                                "exec": [
+                                    "pm.test(\"Status 200\", function () {",
+                                    "    pm.response.to.have.status(200);",
+                                    "});",
+                                    "pm.test(\"Returns an array\", function () {",
+                                    "    pm.expect(pm.response.json()).to.be.an(\"array\");",
+                                    "});"
+                                ]
+                            }
+                        }
+                    ]
+                },
+                {
+                    "name": "Search courses",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/courses/search/postman",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "courses",
+                                "search",
+                                "postman"
+                            ]
+                        }
+                    },
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "type": "text/javascript",
+                                "exec": [
+                                    "pm.test(\"Status 200\", function () {",
+                                    "    pm.response.to.have.status(200);",
+                                    "});",
+                                    "pm.test(\"Returns an array\", function () {",
+                                    "    pm.expect(pm.response.json()).to.be.an(\"array\");",
+                                    "});",
+                                    "pm.test(\"Finds the created course\", function () {",
+                                    "    pm.expect(pm.response.json().some(c => c.code === \"POSTMAN-101\")).to.be.true;",
+                                    "});"
+                                ]
+                            }
+                        }
+                    ]
+                },
+                {
+                    "name": "Get course by id",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/courses/{{courseId}}",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "courses",
+                                "{{courseId}}"
+                            ]
+                        }
+                    },
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "type": "text/javascript",
+                                "exec": [
+                                    "pm.test(\"Status 200\", function () {",
+                                    "    pm.response.to.have.status(200);",
+                                    "});"
+                                ]
+                            }
+                        }
+                    ]
+                },
+                {
+                    "name": "Get course - not found",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/courses/999999",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "courses",
+                                "999999"
+                            ]
+                        }
+                    },
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "type": "text/javascript",
+                                "exec": [
+                                    "pm.test(\"Status 404\", function () {",
+                                    "    pm.response.to.have.status(404);",
+                                    "});",
+                                    "pm.test(\"Returns a message\", function () {",
+                                    "    pm.expect(pm.response.json()).to.have.property(\"message\");",
+                                    "});"
+                                ]
+                            }
+                        }
+                    ]
+                },
+                {
+                    "name": "Update course",
+                    "request": {
+                        "method": "PUT",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{baseUrl}}/courses/{{courseId}}",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "courses",
+                                "{{courseId}}"
+                            ]
+                        },
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"user_id\": {{userId}},\n    \"code\": \"POSTMAN-101\",\n    \"title\": \"Postman Course Edited\"\n}",
+                            "options": {
+                                "raw": {
+                                    "language": "json"
+                                }
+                            }
+                        }
+                    },
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "type": "text/javascript",
+                                "exec": [
+                                    "pm.test(\"Status 200\", function () {",
+                                    "    pm.response.to.have.status(200);",
+                                    "});",
+                                    "pm.test(\"Title updated\", function () {",
+                                    "    pm.expect(pm.response.json().title).to.eql(\"Postman Course Edited\");",
+                                    "});"
+                                ]
+                            }
+                        }
+                    ]
+                },
+                {
+                    "name": "Update course - not found",
+                    "request": {
+                        "method": "PUT",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{baseUrl}}/courses/999999",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "courses",
+                                "999999"
+                            ]
+                        },
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"user_id\": {{userId}},\n    \"code\": \"POSTMAN-998\",\n    \"title\": \"X\"\n}",
+                            "options": {
+                                "raw": {
+                                    "language": "json"
+                                }
+                            }
+                        }
+                    },
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "type": "text/javascript",
+                                "exec": [
+                                    "pm.test(\"Status 404\", function () {",
+                                    "    pm.response.to.have.status(404);",
+                                    "});",
+                                    "pm.test(\"Returns a message\", function () {",
+                                    "    pm.expect(pm.response.json()).to.have.property(\"message\");",
+                                    "});"
+                                ]
+                            }
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "name": "Reports",
+            "item": [
+                {
+                    "name": "SQL 01 - Users with most courses",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/reports/users-most-courses",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "reports",
+                                "users-most-courses"
+                            ]
+                        }
+                    },
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "type": "text/javascript",
+                                "exec": [
+                                    "pm.test(\"Status 200\", function () {",
+                                    "    pm.response.to.have.status(200);",
+                                    "});",
+                                    "pm.test(\"Returns an array\", function () {",
+                                    "    pm.expect(pm.response.json()).to.be.an(\"array\");",
+                                    "});",
+                                    "pm.test(\"Has total_courses as number\", function () {",
+                                    "    pm.expect(pm.response.json()[0].total_courses).to.be.a(\"number\");",
+                                    "});"
+                                ]
+                            }
+                        }
+                    ]
+                },
+                {
+                    "name": "SQL 02 - Course with most contents",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/reports/course-most-contents",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "reports",
+                                "course-most-contents"
+                            ]
+                        }
+                    },
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "type": "text/javascript",
+                                "exec": [
+                                    "pm.test(\"Status 200\", function () {",
+                                    "    pm.response.to.have.status(200);",
+                                    "});",
+                                    "pm.test(\"Returns an array\", function () {",
+                                    "    pm.expect(pm.response.json()).to.be.an(\"array\");",
+                                    "});",
+                                    "pm.test(\"Has total_contents\", function () {",
+                                    "    pm.expect(pm.response.json()[0]).to.have.property(\"total_contents\");",
+                                    "});"
+                                ]
+                            }
+                        }
+                    ]
+                },
+                {
+                    "name": "SQL 03 - Courses with totals",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/reports/courses-totals",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "reports",
+                                "courses-totals"
+                            ]
+                        }
+                    },
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "type": "text/javascript",
+                                "exec": [
+                                    "pm.test(\"Status 200\", function () {",
+                                    "    pm.response.to.have.status(200);",
+                                    "});",
+                                    "pm.test(\"Returns an array\", function () {",
+                                    "    pm.expect(pm.response.json()).to.be.an(\"array\");",
+                                    "});",
+                                    "pm.test(\"Has modules and contents totals\", function () {",
+                                    "    pm.expect(pm.response.json()[0]).to.include.keys(\"total_modules\", \"total_contents\");",
+                                    "});"
+                                ]
+                            }
+                        }
+                    ]
+                },
+                {
+                    "name": "SQL 04 - Contents with course name",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/reports/contents-with-course",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "reports",
+                                "contents-with-course"
+                            ]
+                        }
+                    },
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "type": "text/javascript",
+                                "exec": [
+                                    "pm.test(\"Status 200\", function () {",
+                                    "    pm.response.to.have.status(200);",
+                                    "});",
+                                    "pm.test(\"Returns an array\", function () {",
+                                    "    pm.expect(pm.response.json()).to.be.an(\"array\");",
+                                    "});",
+                                    "pm.test(\"Has course_title\", function () {",
+                                    "    pm.expect(pm.response.json()[0]).to.have.property(\"course_title\");",
+                                    "});"
+                                ]
+                            }
+                        }
+                    ]
+                },
+                {
+                    "name": "SQL 05 - Users who watched content 2",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/reports/content-2-viewers",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "reports",
+                                "content-2-viewers"
+                            ]
+                        }
+                    },
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "type": "text/javascript",
+                                "exec": [
+                                    "pm.test(\"Status 200\", function () {",
+                                    "    pm.response.to.have.status(200);",
+                                    "});",
+                                    "pm.test(\"Returns an array\", function () {",
+                                    "    pm.expect(pm.response.json()).to.be.an(\"array\");",
+                                    "});",
+                                    "pm.test(\"All rows are content 2\", function () {",
+                                    "    pm.response.json().forEach(r => pm.expect(r.content_id).to.eql(2));",
+                                    "});"
+                                ]
+                            }
+                        }
+                    ]
+                },
+                {
+                    "name": "SQL 05 - Viewers of any content",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/reports/content-viewers/1",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "reports",
+                                "content-viewers",
+                                "1"
+                            ]
+                        }
+                    },
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "type": "text/javascript",
+                                "exec": [
+                                    "pm.test(\"Status 200\", function () {",
+                                    "    pm.response.to.have.status(200);",
+                                    "});",
+                                    "pm.test(\"Returns an array\", function () {",
+                                    "    pm.expect(pm.response.json()).to.be.an(\"array\");",
+                                    "});"
+                                ]
+                            }
+                        }
+                    ]
+                },
+                {
+                    "name": "SQL 05 - invalid content id",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/reports/content-viewers/abc",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "reports",
+                                "content-viewers",
+                                "abc"
+                            ]
+                        }
+                    },
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "type": "text/javascript",
+                                "exec": [
+                                    "pm.test(\"Status 400\", function () {",
+                                    "    pm.response.to.have.status(400);",
+                                    "});",
+                                    "pm.test(\"Returns a message\", function () {",
+                                    "    pm.expect(pm.response.json()).to.have.property(\"message\");",
+                                    "});"
+                                ]
+                            }
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "name": "Cleanup",
+            "item": [
+                {
+                    "name": "Delete course",
+                    "request": {
+                        "method": "DELETE",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/courses/{{courseId}}",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "courses",
+                                "{{courseId}}"
+                            ]
+                        }
+                    },
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "type": "text/javascript",
+                                "exec": [
+                                    "pm.test(\"Status 200\", function () {",
+                                    "    pm.response.to.have.status(200);",
+                                    "});"
+                                ]
+                            }
+                        }
+                    ]
+                },
+                {
+                    "name": "Delete course - not found",
+                    "request": {
+                        "method": "DELETE",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/courses/{{courseId}}",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "courses",
+                                "{{courseId}}"
+                            ]
+                        }
+                    },
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "type": "text/javascript",
+                                "exec": [
+                                    "pm.test(\"Status 404\", function () {",
+                                    "    pm.response.to.have.status(404);",
+                                    "});",
+                                    "pm.test(\"Returns a message\", function () {",
+                                    "    pm.expect(pm.response.json()).to.have.property(\"message\");",
+                                    "});"
+                                ]
+                            }
+                        }
+                    ]
+                },
+                {
+                    "name": "Delete user",
+                    "request": {
+                        "method": "DELETE",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/users/{{userId}}",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "users",
+                                "{{userId}}"
+                            ]
+                        }
+                    },
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "type": "text/javascript",
+                                "exec": [
+                                    "pm.test(\"Status 200\", function () {",
+                                    "    pm.response.to.have.status(200);",
+                                    "});"
+                                ]
+                            }
+                        }
+                    ]
+                },
+                {
+                    "name": "Delete user - not found",
+                    "request": {
+                        "method": "DELETE",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/users/{{userId}}",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "users",
+                                "{{userId}}"
+                            ]
+                        }
+                    },
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "type": "text/javascript",
+                                "exec": [
+                                    "pm.test(\"Status 404\", function () {",
+                                    "    pm.response.to.have.status(404);",
+                                    "});",
+                                    "pm.test(\"Returns a message\", function () {",
+                                    "    pm.expect(pm.response.json()).to.have.property(\"message\");",
+                                    "});"
+                                ]
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ],
+    "variable": [
+        {
+            "key": "baseUrl",
+            "value": "http://localhost:3000"
+        },
+        {
+            "key": "userId",
+            "value": ""
+        },
+        {
+            "key": "courseId",
+            "value": ""
+        }
+    ]
+}
