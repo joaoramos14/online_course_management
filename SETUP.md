@@ -114,16 +114,15 @@ A API precisa estar rodando (`npm run dev` na raiz).
 | `POST /contents` | Cria um conteúdo (`module_id`, `title` e `content` obrigatórios) |
 | `PUT /contents/:id` | Atualiza um conteúdo (só os campos enviados) |
 | `DELETE /contents/:id` | Remove um conteúdo |
+| `GET /contents/:id/views` | Lista quem assistiu o conteúdo |
+| `POST /contents/:id/views` | Marca o conteúdo como assistido (`{ "user_id": 1 }`) |
+| `DELETE /contents/:id/views/:userId` | Desmarca o conteúdo como assistido |
 
 Se `position` não for enviado no `POST`, o registro vai para o final do curso/módulo. `content_type` aceita `video` (padrão), `article` ou `quiz`.
 
-Exemplo:
+Respostas de erro seguem o mesmo formato das outras rotas: `{ "message": "..." }`, com `400` (dados inválidos ou curso/módulo inexistente), `404` (registro não encontrado) e `409` (usuário já assistiu o conteúdo).
 
-```bash
-curl -X POST http://localhost:3000/modules   -H "Content-Type: application/json"   -d '{ "course_id": 1, "user_id": 1, "title": "Testing", "description": "Unit and integration tests." }'
-```
-
-Respostas de erro seguem o mesmo formato das outras rotas: `{ "message": "..." }`, com `400` (dados inválidos ou curso/módulo inexistente) e `404` (registro não encontrado).
+**Postman:** a coleção fica em `docs/postman/modules-contents.postman_collection.json`. Importe no Postman, suba a API e rode a coleção inteira (Run collection). Ela cria um módulo e um conteúdo de teste, testa todas as rotas e apaga tudo no final.
 
 
 ## 5. Subir o projeto
