@@ -58,6 +58,7 @@ async function remove(id: string){
         .from("users")
         .delete()
         .eq("id", id)
+        .select()
         .single();
 
     if (error){
