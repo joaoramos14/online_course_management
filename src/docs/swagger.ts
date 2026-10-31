@@ -34,16 +34,16 @@ export const swaggerSpec = {
         "/users/{id}": {
             get: {
                 tags: ["Users"], summary: "Get user by id", parameters: [idParam("id")],
-                responses: { 200: ok("OK", "User"), 404: ok("Not found") },
+                responses: { 200: ok("OK", "User"), 400: ok("Invalid id"), 404: ok("Not found") },
             },
             put: {
                 tags: ["Users"], summary: "Update user", parameters: [idParam("id")],
                 requestBody: body("UserInput"),
-                responses: { 200: ok("OK", "User"), 400: ok("Invalid body"), 409: ok("Email already registered") },
+                responses: { 200: ok("OK", "User"), 400: ok("Invalid id or body"), 404: ok("Not found"), 409: ok("Email already registered") },
             },
             delete: {
                 tags: ["Users"], summary: "Delete user", parameters: [idParam("id")],
-                responses: { 200: ok("Deleted"), 409: ok("User still has courses or modules") },
+                responses: { 200: ok("Deleted (also deletes the user's courses, modules and views)"), 400: ok("Invalid id"), 404: ok("Not found") },
             },
         },
         "/courses": {
@@ -63,16 +63,16 @@ export const swaggerSpec = {
         "/courses/{courseId}": {
             get: {
                 tags: ["Courses"], summary: "Get course by id", parameters: [idParam("courseId")],
-                responses: { 200: ok("OK", "Course"), 404: ok("Not found") },
+                responses: { 200: ok("OK", "Course"), 400: ok("Invalid id"), 404: ok("Not found") },
             },
             put: {
                 tags: ["Courses"], summary: "Update course", parameters: [idParam("courseId")],
                 requestBody: body("CourseInput"),
-                responses: { 200: ok("OK", "Course"), 400: ok("Invalid body"), 409: ok("Code already exists") },
+                responses: { 200: ok("OK", "Course"), 400: ok("Invalid id or body"), 404: ok("Not found"), 409: ok("Code already exists") },
             },
             delete: {
                 tags: ["Courses"], summary: "Delete course", parameters: [idParam("courseId")],
-                responses: { 200: ok("Deleted"), 409: ok("Course still has modules") },
+                responses: { 200: ok("Deleted (also deletes its modules and contents)"), 400: ok("Invalid id"), 404: ok("Not found") },
             },
         },
         "/modules": {
@@ -146,6 +146,43 @@ export const swaggerSpec = {
                 tags: ["Content views"], summary: "Unmark content as watched",
                 parameters: [idParam("id"), idParam("userId")],
                 responses: { 204: ok("Deleted"), 404: ok("View not found") },
+            },
+        },
+        "/reports/users-most-courses": {
+            get: {
+                tags: ["Reports"], summary: "SQL 01 - Users with the most courses",
+                responses: { 200: ok("OK", "ReportUsersMostCourses", true) },
+            },
+        },
+        "/reports/course-most-contents": {
+            get: {
+                tags: ["Reports"], summary: "SQL 02 - Course(s) with the most contents (all in case of a tie)",
+                responses: { 200: ok("OK", "ReportCourseMostContents", true) },
+            },
+        },
+        "/reports/courses-totals": {
+            get: {
+                tags: ["Reports"], summary: "SQL 03 - Courses with total of modules and contents",
+                responses: { 200: ok("OK", "ReportCoursesTotals", true) },
+            },
+        },
+        "/reports/contents-with-course": {
+            get: {
+                tags: ["Reports"], summary: "SQL 04 - Contents with the course name",
+                responses: { 200: ok("OK", "ReportContentsWithCourse", true) },
+            },
+        },
+        "/reports/content-2-viewers": {
+            get: {
+                tags: ["Reports"], summary: "SQL 05 - Users who watched the content ID = 2",
+                responses: { 200: ok("OK", "ReportContentViewers", true) },
+            },
+        },
+        "/reports/content-viewers/{contentId}": {
+            get: {
+                tags: ["Reports"], summary: "SQL 05 for any content",
+                parameters: [idParam("contentId")],
+                responses: { 200: ok("OK", "ReportContentViewers", true), 400: ok("Invalid content id") },
             },
         },
     },
@@ -224,6 +261,43 @@ export const swaggerSpec = {
             ContentViewInput: {
                 type: "object", required: ["user_id"],
                 properties: { user_id: { type: "integer" } },
+            },
+            ReportUsersMostCourses: {
+                type: "object",
+                properties: {
+                    id: { type: "integer" }, name: { type: "string" }, email: { type: "string" },
+                    total_courses: { type: "integer" },
+                },
+            },
+            ReportCourseMostContents: {
+                type: "object",
+                properties: {
+                    id: { type: "integer" }, code: { type: "string" }, title: { type: "string" },
+                    total_contents: { type: "integer" },
+                },
+            },
+            ReportCoursesTotals: {
+                type: "object",
+                properties: {
+                    id: { type: "integer" }, code: { type: "string" }, title: { type: "string" },
+                    total_modules: { type: "integer" }, total_contents: { type: "integer" },
+                },
+            },
+            ReportContentsWithCourse: {
+                type: "object",
+                properties: {
+                    content_id: { type: "integer" }, content_title: { type: "string" },
+                    content_type: { type: "string" }, module_title: { type: "string" },
+                    course_code: { type: "string" }, course_title: { type: "string" },
+                },
+            },
+            ReportContentViewers: {
+                type: "object",
+                properties: {
+                    user_id: { type: "integer" }, name: { type: "string" }, email: { type: "string" },
+                    content_id: { type: "integer" }, content_title: { type: "string" },
+                    viewed_at: { type: "string", format: "date-time" },
+                },
             },
         },
     },
